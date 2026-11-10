@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Physics in 3D</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚛</text></svg>" />
+  </head>
+  <body>
+    <div id="app">
+      <aside id="sidebar">
+        <div class="brand">
+          <div class="logo">⚛</div>
+          <div>
+            <h1>Physics in 3D</h1>
+            <p>High school → college → Feynman. Glasses-free 3D via DisplayXR.</p>
+          </div>
+        </div>
+        <nav id="tracks"></nav>
+      </aside>
+
+      <main id="stage">
+        <div id="canvas-host"></div>
+        <pre id="readout"></pre>
+        <div id="gui-host"></div>
+        <div id="toolbar">
+          <button id="btn-pause" title="Pause / play (Space)">⏸</button>
+          <label class="speed">speed
+            <input id="speed" type="range" min="0.1" max="3" step="0.1" value="1" />
+            <span id="speed-val">1.0×</span>
+          </label>
+          <button id="btn-reset" title="Restart lesson (R)">↺ Restart</button>
+          <button id="btn-view" title="Reset camera (C)">⌖ View</button>
+          <button id="btn-focus" title="Focus mode: hide side panels (F)">⛶</button>
+          <button id="btn-anaglyph" title="Red/cyan anaglyph preview (needs 3D glasses)">🔴🔵 Anaglyph</button>
+          <span id="xr-status" data-kind="off">checking for 3D display…</span>
+        </div>
+      </main>
+
+      <section id="lesson"></section>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
