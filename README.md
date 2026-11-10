@@ -9,9 +9,10 @@ with an optional red/cyan anaglyph mode.
 
 ## Screen sizes
 
-- **3D depth per panel:** DisplayXR reports the canvas's physical size and the panel's nominal viewing distance. The stereo
-  rig maps the orbit target to that distance and lowers eye separation until the lesson fits the vergence comfort zone
-  (`cameraRigComfortFactor`). A 3D tablet held close gets gentler depth; a 27″ monitor keeps full depth.
+- **3D depth per panel:** the canvas is a window onto the lesson (a display rig), so the orbit target always sits on
+  the glass, whatever the window size or zoom. DisplayXR reports the canvas's physical size and the panel's nominal
+  viewing distance; eye separation is lowered only when a lesson would reach outside the vergence comfort zone
+  (`comfortDepthFactor`). A 3D tablet held close gets gentler depth; a 27″ monitor keeps full depth.
 - **Framing:** narrow or portrait views pull the camera back so lessons aren't cropped at the sides.
 - **Layout:** three columns on desktop; lesson text moves under the view on laptops and tablets; everything stacks on
   phones (3D view → lesson → lesson list). Press **F** (or ⛶) for focus mode, which gives the 3D view the whole screen.
@@ -32,9 +33,11 @@ npm run dev          # http://localhost:5173
 
 How it works (`src/main.js`, "DisplayXR" section): `@displayxr/inline3d` opens an inline-3D session
 and `wall.addScene(canvas, onFrame)` hands over one `XRView` per eye each frame. The app renders both
-into a side-by-side backing store, and the browser weaves them for the panel. The orbit camera is sent
-as a camera rig (`cameraRigFromCamera`), so the orbit target sits on the glass and the runtime applies
-the eye-tracked off-axis projection.
+into a side-by-side backing store, and the browser weaves them for the panel. Every lesson is a subject you
+turn, so it uses a **display rig** (`displayRig`): the canvas is a window posed at the orbit target,
+facing the orbit camera and as tall as the camera's view there. The target sits on the glass, the
+framing matches 2D, and the runtime places the eyes from the tracked head. Orbiting turns the lesson
+behind a fixed window; there is no convergence distance to keep in sync.
 
 No 3D display? Click **🔴🔵 Anaglyph** and use red/cyan glasses.
 
@@ -53,6 +56,8 @@ free official text at https://www.feynmanlectures.caltech.edu (the text itself i
 
 - **Desktop:** drag to orbit, scroll to zoom. `Space` pauses, `R` restarts, `C` resets the camera, `←/→` changes lesson.
 - **On a 3D display:** the same mouse controls work. Moving your head looks around the scene (motion parallax).
+- **Idle:** after 8 s without input the view orbits slowly; any click, scroll or key stops it. Off when the system asks
+  for reduced motion.
 
 ## Adding a lesson
 
