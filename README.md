@@ -5,6 +5,17 @@ Interactive 3D physics course: **High School → College → The Feynman Lecture
 including the Samsung Odyssey 3D, Acer SpatialLabs and Nubia Pad 3D. Any other browser shows it in 2D,
 with an optional red/cyan anaglyph mode.
 
+**Live:** https://3dlaern.vercel.app. Every push to `main` deploys automatically through Vercel's GitHub integration.
+
+## Screen sizes
+
+- **3D depth per panel:** DisplayXR reports the canvas's physical size and the panel's nominal viewing distance. The stereo
+  rig maps the orbit target to that distance and lowers eye separation until the lesson fits the vergence comfort zone
+  (`cameraRigComfortFactor`). A 3D tablet held close gets gentler depth; a 27″ monitor keeps full depth.
+- **Framing:** narrow or portrait views pull the camera back so lessons aren't cropped at the sides.
+- **Layout:** three columns on desktop; lesson text moves under the view on laptops and tablets; everything stacks on
+  phones (3D view → lesson → lesson list). Press **F** (or ⛶) for focus mode, which gives the 3D view the whole screen.
+
 ## Run
 
 ```bash
