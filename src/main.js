@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { AnaglyphEffect } from 'three/examples/jsm/effects/AnaglyphEffect.js';
 import { createInline3D } from '@displayxr/inline3d';
-import { EyeCamera, cameraRigFromCamera, cameraRigComfortFactor } from '@displayxr/inline3d/three';
+import { EyeCamera, displayRig, comfortDepthFactor } from '@displayxr/inline3d/three';
 import GUI from 'lil-gui';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -23,6 +23,20 @@ scene.background = BG;
 const camera = new THREE.PerspectiveCamera(55, 1, 0.05, 200);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+
+// Idle showcase: after a few seconds without input, orbit slowly so the depth reads even when
+// nobody touches the scene. Any pointer, wheel or key input stops it and restarts the timer.
+const IDLE_MS = 8000;
+const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+controls.autoRotateSpeed = 1; // three's unit: 1 = one turn per minute at 60 fps
+let idleTimer = 0;
+function markActive() {
+  controls.autoRotate = false;
+  clearTimeout(idleTimer);
+  if (!reduceMotion) idleTimer = setTimeout(() => { controls.autoRotate = true; }, IDLE_MS);
+}
+for (const ev of ['pointerdown', 'wheel', 'keydown']) window.addEventListener(ev, markActive, { passive: true });
+markActive();
 
 scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x1a1f2a, 1.4));
 const sunLight = new THREE.DirectionalLight(0xffffff, 1.6);
@@ -203,39 +217,49 @@ window.addEventListener('keydown', (e) => {
 // In the DisplayXR Browser on a spatial display (Samsung Odyssey 3D, Acer SpatialLabs, …) the
 // canvas becomes a woven, eye-tracked 3D window. Each frame the runtime hands us one XRView per
 // eye; we render both into a side-by-side backing store and the browser weaves them for the
-// panel. The orbit camera is passed in as a *camera rig*, so the orbit target sits on the glass.
-// Everywhere else the page stays 2D (with an optional red/cyan anaglyph preview).
+// panel. Everywhere else the page stays 2D (with an optional red/cyan anaglyph preview).
+//
+// Every lesson is a SUBJECT the user turns, so it uses a DISPLAY rig: the canvas is a portal (a
+// window onto the scene) and the runtime places the eyes from the tracked head. The portal is
+// posed AT the orbit target, facing the orbit camera, and is exactly as tall as the camera's view
+// at that distance. So the target always sits on the glass and the framing matches the 2D view;
+// orbiting turns the subject behind a fixed window. There is no convergence distance for the app
+// to keep in sync: resizing, zooming or a lesson's camera can no longer push the scene back.
 const statusEl = document.getElementById('xr-status');
 const anaBtn = document.getElementById('btn-anaglyph');
 const eye = new EyeCamera(THREE);
 const rig = {};
-let wall = null, handle = null, woven = false, anaglyph = null, conv = 0, ipd = 0.8;
+let wall = null, handle = null, woven = false, anaglyph = null, ipd = 1;
 let metrics = null; // this canvas on this panel, in metres (size, viewing distance)
 
 function setStatus(text, kind = '') { statusEl.textContent = text; statusEl.dataset.kind = kind; }
 
-// Depth adapts to the screen. The orbit target maps to the panel's nominal viewing distance
-// (≈0.4 m tablet, ≈0.6 m laptop, ≈0.75 m+ big monitor), then the eye separation is lowered until
-// the whole lesson fits the vergence comfort zone for THIS canvas's physical height. A small,
-// close screen gets gentler depth; a large one keeps full depth.
+// Comfort: with real proportions a lesson may reach further in front of or behind the glass than
+// is comfortable on a small, close screen. comfortDepthFactor() returns the eye-separation factor
+// (never above 1) that keeps the lesson's bounding sphere inside the comfort zone for THIS canvas.
 function buildRig() {
   camera.updateMatrixWorld();
   const d = camera.position.distanceTo(controls.target);
-  conv = conv ? conv + (d - conv) * 0.05 : d; // follow zoom slowly: convergence must not jump
-  const viewerM = metrics?.nominalViewerM ?? 0.6;
-  const m2v = conv / viewerM; // ⇒ ipd × m2v × diopters × viewer = ipd ≤ 1 (DisplayXR comfort rule)
-  let target = 0.8;
+  const vH = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+  let target = 1;
   if (metrics) {
     const c = camera.position.distanceTo(sceneBounds.center);
-    const k = cameraRigComfortFactor({
-      zNear: Math.max(0.1, c - sceneBounds.radius), zFar: c + sceneBounds.radius,
-      convergence: conv, verticalFov: THREE.MathUtils.degToRad(camera.fov), aspect: camera.aspect,
-      tileHeightM: metrics.canvasSizeM[1], viewerM, metersToVirtual: m2v,
+    const k = comfortDepthFactor({
+      frontH: Math.max(0, d - (c - sceneBounds.radius)) / vH,
+      backH: Math.max(0, c + sceneBounds.radius - d) / vH,
+      tileHeightM: metrics.canvasSizeM[1],
+      viewerM: metrics.nominalViewerM ?? 0.6,
     });
-    if (Number.isFinite(k) && k > 0) target = Math.min(1, 0.9 * k);
+    if (Number.isFinite(k) && k > 0) target = Math.min(1, k);
   }
   ipd += (target - ipd) * 0.1; // ease, never jump
-  return cameraRigFromCamera(THREE, camera, { convergence: conv, metersToVirtual: m2v, ipdFactor: ipd, out: rig });
+  return displayRig({
+    position: controls.target,
+    orientation: camera.quaternion,
+    virtualDisplayHeight: vH,
+    ipdFactor: ipd,
+    out: rig,
+  });
 }
 
 async function refreshMetrics() {
