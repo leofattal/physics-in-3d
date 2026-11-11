@@ -47,6 +47,7 @@ No 3D display? Click **🔴🔵 Anaglyph** and use red/cyan glasses.
 |---|---|
 | 🎒 High School | Projectile motion · Pendulum & energy · Traveling/standing waves · Collisions & momentum |
 | 🎓 College | Kepler orbits (equal-area wedges) · 3D electric fields · Lorentz force / E×B drift · Quantum particle in a box |
+| 🧪 Atoms & Molecules | Hydrogen orbitals (electron cloud, s/p/d/f, phase) · Hybrid orbitals sp/sp²/sp³ · The covalent bond (H₂⁺ energy curve) · Building molecules (H₂, H₂O, NH₃, CH₄, C₂H₄) |
 | 📘 Feynman Lectures | I-1 Atoms in Motion · I-9 Feynman's numerical orbit (his ε = 0.1 table) · I-26 Least time · I-29/30 Interference · II-4 Gauss's law · III-1 Double slit |
 
 The Feynman lessons are original simulations built alongside the chapters. Each one links to the

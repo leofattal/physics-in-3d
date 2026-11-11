@@ -1,6 +1,7 @@
 import * as hs from './lessons/hs.js';
 import * as college from './lessons/college.js';
 import * as fey from './lessons/feynman.js';
+import * as atoms from './lessons/atoms.js';
 
 export const TRACKS = [
   {
@@ -16,6 +17,13 @@ export const TRACKS = [
     icon: '🎓',
     blurb: 'Gravitation, 3D vector fields, the Lorentz force and your first wavefunction.',
     lessons: [college.orbits, college.efield, college.magnetic, college.quantumBox],
+  },
+  {
+    id: 'atoms',
+    name: 'Atoms & Molecules',
+    icon: '🧪',
+    blurb: 'Electron clouds you can walk around: hydrogen orbitals, hybrid orbitals, and how overlapping clouds become chemical bonds.',
+    lessons: [atoms.hydrogen, atoms.hybrids, atoms.covalent, atoms.molecules],
   },
   {
     id: 'feynman',
